@@ -102,4 +102,4 @@ if __name__ == '__main__':
         npz_depth_file = np.concatenate(depth_arrays)
 
         depth_tensor_output = os.path.join(args.outdir, os.path.splitext(os.path.basename(filename))[0] + ".npz")
-        np.savez(depth_tensor_output, npz_depth_file)
+        np.savez(depth_tensor_output, depth=npz_depth_file)
