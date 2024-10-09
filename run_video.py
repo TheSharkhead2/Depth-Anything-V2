@@ -64,6 +64,9 @@ if __name__ == '__main__':
         
         output_path = os.path.join(args.outdir, os.path.splitext(os.path.basename(filename))[0] + '.mp4')
         out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"mp4v"), frame_rate, (output_width, frame_height))
+
+        # keep track of numpy arrays representing depth
+        depth_arrays = []
         
         while raw_video.isOpened():
             ret, raw_frame = raw_video.read()
@@ -71,6 +74,10 @@ if __name__ == '__main__':
                 break
             
             depth = depth_anything.infer_image(raw_frame, args.input_size)
+
+            depth_shape = depth.shape
+
+            depth_arrays.append(np.reshape(depth, (1, depth_shape[0], depth_shape[1])))
             
             depth = (depth - depth.min()) / (depth.max() - depth.min()) * 255.0
             depth = depth.astype(np.uint8)
@@ -90,3 +97,9 @@ if __name__ == '__main__':
         
         raw_video.release()
         out.release()
+
+        # save depth as tensor
+        npz_depth_file = np.concatenate(depth_arrays)
+
+        depth_tensor_output = os.path.join(args.outdir, os.path.splitext(os.path.basename(filename))[0] + ".npz")
+        np.savez(depth_tensor_output, npz_depth_file)
